@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Health Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Health Chatbot</h1>
+
+        <form method="POST">
+            {% if question %}
+                <p>Question {{ question_number + 1 }} of {{ total_questions }}</p>
+                <p>{{ question }}</p>
+                <input type="hidden" name="question_number" value="{{ question_number }}">
+                <input type="text" name="response" required>
+                <button type="submit">Submit</button>
+            {% endif %}
+
+            {% if prediction %}
+                <div class="result">
+                    <h3>Prediction: {{ prediction | capitalize }} risk of heart disease</h3>
+                    <p>{{ advice }}</p>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</body>
+</html>
