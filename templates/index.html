@@ -13,18 +13,29 @@
         <form method="POST">
             {% if question %}
                 <p>Question {{ question_number + 1 }} of {{ total_questions }}</p>
-                <p>{{ question }}</p>
+                <p>{{ question.question }}</p>
                 <input type="hidden" name="question_number" value="{{ question_number }}">
-                <input type="text" name="response" required>
+                <input type="text" name="response" required placeholder="{{ question.range}}">
                 <button type="submit">Submit</button>
             {% endif %}
 
             {% if prediction %}
                 <div class="result">
                     <h3>Prediction: {{ prediction | capitalize }} risk of heart disease</h3>
-                    <p>{{ advice }}</p>
-                </div>
+                    {% for item in advice.split("\n") %}
+                        {% if item.startswith("##") %}
+                            <h4>{{ item.replace("##", "") | replace("**", "") }}</h4>
+                        {% else %}
+                            {% if item.startswith("*") %}
+                                <p>{{ item.replace("*", "") | replace("**", "") }}</p>
+                            {% else %}
+                                <p>{{ item | replace("**", "") }}</p>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+             </div>
             {% endif %}
+            
         </form>
     </div>
 </body>
