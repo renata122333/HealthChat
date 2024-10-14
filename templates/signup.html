@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Account</title>
+    <link rel="stylesheet" href="/static/signup.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Create New Account</h1>
+        <p>Already Registered? <a href="login.html">Login</a></p>
+    </div>
+    <div class="content">
+        <img src="/static/signup.jpg" alt="Doctor Image" class="picLeft">
+        <div class="form">
+            <input type="text" id="name" placeholder="Please enter your name">
+            <input type="email" id="email" placeholder="Please enter your email">
+            <input type="password" id="password" placeholder="Please enter your password">
+            <button id="signup-button">Sign Up</button>
+            <img src="/static/logo.jpg" id="logo" alt="Logo">
+        </div>
+    </div>
+</div>
+
+<!-- Link to Firebase configuration -->
+<script type="module" src="/firebase.js"></script>
+</body>
+</html>
