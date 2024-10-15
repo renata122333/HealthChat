@@ -1,0 +1,122 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+}
+
+html, body {
+    margin: 0; /* Ensure there's no default margin */
+    padding: 0; /* Ensure there's no default padding */
+    height: 100%; /* Optional: Ensure body takes full height */
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: center;
+    margin-top: 0;
+}
+
+.header {
+    background-color: #0011FF;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+    margin-top: 0; /* Ensure no margin on top */
+}
+
+.login-box {
+    text-align: center;
+    background-color: #0000ff;
+    padding: 40px 20px;
+    border-radius: 8px;
+    color: white;
+    width: 100%;
+    height: 16%;
+}
+
+.login-box h1 {
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.login-box p {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.image-box {
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.image-box img {
+    width: 500px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+    margin-top: 70px;
+    color: #7a7a7a;
+    align-self: center;
+}
+
+input {
+    padding: 10px;
+    border: none;
+    border-radius: 25px;
+    margin-bottom: 10px;
+    background-color: #c7c5c5;
+    color: rgb(0, 0, 0);
+    width: 400px;
+    font-size: 16px;
+    align-self: center;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background-color: #0000ff;
+    color: white;
+    width: 300px;
+    align-self: center;
+    font-size: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: #3333ff;
+}
+
+.picLeft {
+    float: left;
+    margin-right: 10px;
+}
+
+#logo {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 60px; 
+    height: auto;
+}
