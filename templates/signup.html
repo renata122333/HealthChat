@@ -4,28 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create New Account</title>
-    <link rel="stylesheet" href="/static/signup.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+    <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
         <h1>Create New Account</h1>
-        <p>Already Registered? <a href="login.html">Login</a></p>
+        <p>Already Registered? <a href="{{ url_for('login') }}">Login</a></p>
     </div>
-    <div class="content">
-        <img src="/static/signup.jpg" alt="Doctor Image" class="picLeft">
-        <div class="form">
-            <input type="text" id="name" placeholder="Please enter your name">
-            <input type="email" id="email" placeholder="Please enter your email">
-            <input type="password" id="password" placeholder="Please enter your password">
-            <button id="signup-button">Sign Up</button>
-            <img src="/static/logo.jpg" id="logo" alt="Logo">
-        </div>
+    <div class="form">
+        <form id="signup-form" onsubmit="event.preventDefault(); signup();">
+            <input type="text" id="name" name="name" placeholder="Please enter your name" required>
+            <input type="email" id="email" name="email" placeholder="Please enter your email" required>
+            <input type="password" id="password" name="password" placeholder="Please enter your password" required>
+            <button type="submit">Sign Up</button>
+        </form>
     </div>
 </div>
-
-<!-- Link to Firebase configuration -->
-<script type="module" src="/firebase.js"></script>
 </body>
 </html>

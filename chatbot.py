@@ -4,6 +4,7 @@ import google.generativeai as genai
 
 chatbot_routes = Blueprint('chatbot_routes', __name__)
 
+# Define the health-related questions
 questions = [
     {"question": "What is your name?", "range": "Text"},
     {"question": "What is your age?", "range": "18-100"},
@@ -32,10 +33,12 @@ questions = [
 
 user_responses = {}
 
+# Configure Generative AI
 genai.configure(api_key="AIzaSyAd0kEzSrkQ6fT4qGqyRxDY0CWolic7_N0")
 model = genai.GenerativeModel('gemini-pro')
 
 
+# Chatbot route
 @chatbot_routes.route('/', methods=['GET', 'POST'])
 def index():
     total_questions = len(questions)
@@ -44,24 +47,30 @@ def index():
         question_number = int(request.form.get('question_number', 0))
         response = request.form.get('response')
 
+        # Validate input for the question
         if not validate_input(questions[question_number], response):
             return render_template('index.html', question=questions[question_number], question_number=question_number,
                                    total_questions=total_questions, error="Invalid input. Please check the range.")
 
+        # Store the user's response
         user_responses[questions[question_number]['question']] = response
 
+        # If all questions are answered, make a prediction
         if question_number == total_questions - 1:
             risk, advice = make_prediction(user_responses)
             if risk == "Error":
                 risk, advice = gemini_prediction(user_responses)
             return render_template('index.html', prediction=risk, advice=advice)
 
+        # Proceed to the next question
         return render_template('index.html', question=questions[question_number + 1],
                                question_number=question_number + 1, total_questions=total_questions)
 
+    # Render the first question
     return render_template('index.html', question=questions[0], question_number=0, total_questions=total_questions)
 
 
+# Validate the input based on question type
 def validate_input(question, response):
     if question['range'] == "Text":
         return True
@@ -77,6 +86,7 @@ def validate_input(question, response):
     return False
 
 
+# Prediction using Gemini AI model
 def gemini_prediction(responses):
     prompt = f"Based on the following health data, assess the risk of heart disease and provide advice: {responses}"
     response = model.generate_content(prompt)
@@ -87,5 +97,3 @@ def gemini_prediction(responses):
     elif "low risk" in response.text.lower():
         risk = "low"
     return risk, advice
-
-# Update app.py and model.py as needed

@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="/static/home.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 <body>
     <!-- Navigation Bar -->
     <div class="navbar">
-        <a href="/template/home.html" class="nav-item">Home</a>
-        <a href="/template/profile.html" class="nav-item">Profile</a>
-        <a href="/template/chatbot.html" class="nav-item">Chatbot</a>
-        <a href="#" class="logout">Logout</a>
+        <a href="{{ url_for('home') }}" class="nav-item">Home</a>
+<a href="{{ url_for('profile') }}" class="nav-item">Profile</a>
+<a href="{{ url_for('chatbot_routes.index') }}" class="nav-item">Chatbot</a>
+
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
     </div>
 
     <!-- Doctor illustration image at the bottom-left -->
-    <img src="/static/home.jpg" alt="Doctor illustration" class="image bottom-left"> 
+    <img src="{{ url_for('static', filename='home.jpg') }}" alt="Doctor illustration" class="image bottom-left">
 
     <!-- Footer Logo -->
-    <img src="/static/logo.jpg" id="logo" alt="Logo">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" id="logo" alt="Logo">
 
     <!-- Link to Firebase configuration -->
-    <script type="module" src="/firebase.js"></script>
+    <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
 </body>
 </html>
