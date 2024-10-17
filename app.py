@@ -3,10 +3,14 @@ from firebase_init import initialize_firebase
 import firebase_admin
 from firebase_admin import auth
 import google.auth.exceptions
+from datetime import timedelta
 
 # Initialize Flask application
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'  # Set a secret key for session management
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
+app.secret_key = 'your-secret-key'
+# Set a secret key for session management
 
 # Import and register chatbot blueprint
 from chatbot import chatbot_routes
@@ -76,20 +80,45 @@ def home():
 @app.route('/profile')
 def profile():
     if 'user' not in session:
+        flash('User session expired, please log in again.', 'error')
         return redirect(url_for('login'))
 
     try:
+        # Debugging session
+        print(f"Session User: {session.get('user')}")
+
         # Verify Firebase ID Token
-        id_token = request.cookies.get('token')  # Assuming token is set in cookies after login
-        decoded_token = auth.verify_id_token(id_token)
-        uid = decoded_token['uid']
+        id_token = request.cookies.get('token')
+        if not id_token:
+            flash('Authentication token missing. Please log in again.', 'error')
+            return redirect(url_for('login'))
+
+        print(f"ID Token Retrieved: {id_token}")
+
+        # Decoding token with some leeway to prevent minor timing issues
+        decoded_token = auth.verify_id_token(id_token, leeway=5)
+        uid = decoded_token.get('uid')
+
+        if not uid:
+            flash('Failed to verify user ID. Please log in again.', 'error')
+            return redirect(url_for('login'))
+
+        # Get user data from Firebase
         user = auth.get_user(uid)
         user_data = {
             'name': user.display_name or 'No Name Provided',
             'email': user.email,
             'profile_picture_url': user.photo_url or 'https://placehold.co/100x100'
         }
+
+    except auth.InvalidIdTokenError:
+        flash('Invalid authentication token. Please log in again.', 'error')
+        return redirect(url_for('login'))
+    except auth.ExpiredIdTokenError:
+        flash('Authentication token has expired. Please log in again.', 'error')
+        return redirect(url_for('login'))
     except Exception as e:
+        print(f"Error in profile retrieval: {e}")
         flash(f'Failed to retrieve profile: {str(e)}', 'error')
         return redirect(url_for('login'))
 

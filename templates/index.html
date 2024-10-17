@@ -8,35 +8,55 @@
 </head>
 <body>
     <div class="container">
-        <h1>Heart Health Chatbot</h1>
+        <div class="history">
+            <h2>History</h2>
+            <ul>
+                {% for entry in history %}
+                    <li>
+                        <p><strong>{{ entry.timestamp }}:</strong></p>
+                        <p>Response: {{ entry.responses }}</p>
+                        <p>Prediction: {{ entry.prediction }} risk</p>
+                        <p>Advice: {{ entry.advice }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-        <form method="POST">
-            {% if question %}
-                <p>Question {{ question_number + 1 }} of {{ total_questions }}</p>
-                <p>{{ question.question }}</p>
-                <input type="hidden" name="question_number" value="{{ question_number }}">
-                <input type="text" name="response" required placeholder="{{ question.range}}">
-                <button type="submit">Submit</button>
-            {% endif %}
+        <div class="chat">
+            <h1>Heart Health Chatbot</h1>
 
-            {% if prediction %}
-                <div class="result">
-                    <h3>Prediction: {{ prediction | capitalize }} risk of heart disease</h3>
-                    {% for item in advice.split("\n") %}
-                        {% if item.startswith("##") %}
-                            <h4>{{ item.replace("##", "") | replace("**", "") }}</h4>
-                        {% else %}
-                            {% if item.startswith("*") %}
-                                <p>{{ item.replace("*", "") | replace("**", "") }}</p>
+            <form method="POST">
+                <div class="chat-box">
+                    {% if question %}
+                        <div class="user-message">
+                            <p>Question {{ question_number + 1 }} of {{ total_questions }}: {{ question.question }}</p>
+                        </div>
+                        <div class="input-container">
+                            <input type="hidden" name="question_number" value="{{ question_number }}">
+                            <input type="text" name="response" required placeholder="{{ question.range }}">
+                            <button type="submit">Submit</button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if prediction %}
+                    <div class="result">
+                        <h3>Prediction: {{ prediction | capitalize }} risk of heart disease</h3>
+                        {% for item in advice.split("\n") %}
+                            {% if item.startswith("##") %}
+                                <h4>{{ item.replace("##", "") | replace("**", "") }}</h4>
                             {% else %}
-                                <p>{{ item | replace("**", "") }}</p>
+                                {% if item.startswith("*") %}
+                                    <p>{{ item.replace("*", "") | replace("**", "") }}</p>
+                                {% else %}
+                                    <p>{{ item | replace("**", "") }}</p>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                    {% endfor %}
-             </div>
-            {% endif %}
-            
-        </form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </form>
+        </div>
     </div>
 </body>
 </html>
