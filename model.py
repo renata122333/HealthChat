@@ -53,30 +53,3 @@ def save_to_firebase(user_name, responses, prediction, risk, advice):
         user_ref.push(user_data)  # Push new data under the user's reference
     except Exception as e:
         print(f"Error saving to Firebase: {e}")
-
-
-def get_user_history(user_name):
-    try:
-        user_ref = firebase_ref.child(user_name)
-        history = user_ref.get()
-        if history:
-            return history
-        else:
-            return "No history found for this user."
-    except Exception as e:
-        print(f"Error retrieving user history: {e}")
-        return "Error retrieving history."
-
-
-# Example function to display user history
-def display_user_history(user_name):
-    history = get_user_history(user_name)
-    if isinstance(history, str):
-        print(history)
-    else:
-        for key, record in history.items():
-            print(f"Record ID: {key}")
-            print(f"Responses: {record['responses']}")
-            print(f"Prediction: {record['prediction']}")
-            print(f"Risk: {record['risk']}")
-            print(f"Advice: {record['advice']}\n")
