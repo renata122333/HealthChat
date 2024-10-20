@@ -7,56 +7,50 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="sidebar">
+        <form method="POST" action="{{ url_for('chatbot_routes.new_chat') }}">
+            <button type="submit" class="new-chat">+ New chat</button>
+        </form>
         <div class="history">
-            <h2>History</h2>
-            <ul>
-                {% for entry in history %}
-                    <li>
-                        <p><strong>{{ entry.timestamp }}:</strong></p>
-                        <p>Response: {{ entry.responses }}</p>
-                        <p>Prediction: {{ entry.prediction }} risk</p>
-                        <p>Advice: {{ entry.advice }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="chat">
-            <h1>Heart Health Chatbot</h1>
-
-            <form method="POST">
-                <div class="chat-box">
-                    {% if question %}
-                        <div class="user-message">
-                            <p>Question {{ question_number + 1 }} of {{ total_questions }}: {{ question.question }}</p>
-                        </div>
-                        <div class="input-container">
-                            <input type="hidden" name="question_number" value="{{ question_number }}">
-                            <input type="text" name="response" required placeholder="{{ question.range }}">
-                            <button type="submit">Submit</button>
-                        </div>
-                    {% endif %}
+            {% for entry in history %}
+                <div class="history-item">
+                    <p>{{ entry.timestamp }}: {{ entry.question }}</p>
+                    <p>Risk: {{ entry.risk }}</p>
                 </div>
-
-                {% if prediction %}
-                    <div class="result">
-                        <h3>Prediction: {{ prediction | capitalize }} risk of heart disease</h3>
-                        {% for item in advice.split("\n") %}
-                            {% if item.startswith("##") %}
-                                <h4>{{ item.replace("##", "") | replace("**", "") }}</h4>
-                            {% else %}
-                                {% if item.startswith("*") %}
-                                    <p>{{ item.replace("*", "") | replace("**", "") }}</p>
-                                {% else %}
-                                    <p>{{ item | replace("**", "") }}</p>
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </form>
+            {% endfor %}
         </div>
     </div>
+    <div class="main-content">
+        <h1>Heart Health Chatbot</h1>
+        <h2>Welcome, {{ user_name }}!</h2>
+  <div class="chat-container">
+    {% for message in chat_messages %}
+        <div class="message {% if message.is_user %}user-message{% else %}bot-message{% endif %}">
+            <p>{{ message.content | safe }}</p>
+        </div>
+    {% endfor %}
+</div>
+        <form method="POST" action="{{ url_for('chatbot_routes.index') }}" enctype="multipart/form-data">
+            <div class="input-container">
+                <label for="file-upload" class="upload-button">📎</label>
+                <input id="file-upload" type="file" name="file" style="display: none;">
+                <input type="text" name="message" class="chat-input" placeholder="Send a message..." required>
+                <button type="submit" class="send-button">➤</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        // Auto-scroll to the bottom of the chat container
+        function scrollToBottom() {
+            var chatContainer = document.querySelector('.chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Call scrollToBottom when the page loads and after each form submission
+        window.onload = scrollToBottom;
+        document.querySelector('form').addEventListener('submit', function() {
+            setTimeout(scrollToBottom, 100);
+        });
+    </script>
 </body>
 </html>
