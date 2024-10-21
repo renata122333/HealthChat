@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heart Health Chatbot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="sidebar">
@@ -32,10 +33,10 @@
 </div>
         <form method="POST" action="{{ url_for('chatbot_routes.index') }}" enctype="multipart/form-data">
             <div class="input-container">
-                <label for="file-upload" class="upload-button">📎</label>
+                <label for="file-upload" class="upload-button"><i class="fas fa-paperclip"></i></label>
                 <input id="file-upload" type="file" name="file" style="display: none;">
                 <input type="text" name="message" class="chat-input" placeholder="Send a message..." required>
-                <button type="submit" class="send-button">➤</button>
+                <button type="submit" class="send-button"><i class="fas fa-paper-plane"></i></button>
             </div>
         </form>
     </div>

@@ -32,17 +32,18 @@ body {
     text-align: center;
     padding: 20px;
     width: 100%;
-    margin-top: 0; /* Ensure no margin on top */
+    margin-top: 0; 
 }
 
 .login-box {
-    text-align: center;
     background-color: #0000ff;
-    padding: 40px 20px;
-    border-radius: 8px;
     color: white;
+    text-align: center;
+    padding: 30px;
+    border-radius: 8px;
     width: 100%;
     height: 16%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .login-box h1 {
@@ -74,38 +75,57 @@ form {
 
 label {
     margin-bottom: 5px;
-    margin-top: 70px;
+    margin-top: 100px;
     color: #7a7a7a;
     align-self: center;
+}
+
+.password{
+    margin-top: 50px;
+}
+
+p{
+    margin-top: 15px;
+    color: black;
 }
 
 input {
     padding: 10px;
     border: none;
     border-radius: 25px;
-    margin-bottom: 10px;
-    background-color: #c7c5c5;
+    margin-bottom: 5px;
+    background-color: #d4d2d2;
     color: rgb(0, 0, 0);
     width: 400px;
     font-size: 16px;
     align-self: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
-button {
+input:focus {              
+    outline-color: rgb(153, 151, 151); 
+    outline-offset: 0;      
+    outline-style: solid;       
+}
+
+.submit {
     padding: 10px 20px;
     border: none;
     border-radius: 25px;
     background-color: #0000ff;
     color: white;
     width: 300px;
+    height: 40px;
     align-self: center;
     font-size: 16px;
     cursor: pointer;
     text-transform: uppercase;
+    margin-top: 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
-button:hover {
-    background-color: #3333ff;
+.submit:hover {
+    background-color: #2222d3;
 }
 
 .picLeft {
