@@ -3,6 +3,11 @@ from flask import Blueprint, request, render_template, session, g, url_for, flas
 from model import make_prediction as model_prediction, numerical_features, categorical_features, firebase_ref
 import google.generativeai as genai
 from datetime import datetime
+from firebase_init import initialize_firebase  # Import your Firebase initialization
+
+# Initialize Firebase before any Firebase service is accessed
+initialize_firebase()
+
 
 chatbot_routes = Blueprint('chatbot_routes', __name__)
 

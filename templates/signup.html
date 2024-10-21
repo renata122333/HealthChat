@@ -6,6 +6,44 @@
     <title>Create New Account</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
     <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
+    <style>
+        /* Loader Container */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        /* Spinner Animation */
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #0011FF;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Spinner Keyframes */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Loader Text */
+        #loader p {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #0011FF;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -14,16 +52,68 @@
         <p>Already Registered? <a href="{{ url_for('login') }}">Login</a></p>
     </div>
 
-    <img src="/static/output-onlinepngtools (1).png" alt="Logo" class="logo"> 
-    
+    <img src="/static/output-onlinepngtools (1).png" alt="Logo" class="logo">
+
     <div class="form">
         <form id="signup-form" onsubmit="event.preventDefault(); signup();">
             <input type="text" id="name" name="name" placeholder="Please enter your name" required>
+            <input type="text" id="surname" name="surname" placeholder="Please enter your surname" required>
+            <input type="date" id="dob" name="dob" placeholder="Please enter your date of birth" required>
             <input type="email" id="email" name="email" placeholder="Please enter your email" required>
-            <input type="password" id="password" name="password" placeholder="Please enter your password" required>
+
+            <div style="position: relative;">
+                <input type="password" id="password" name="password" placeholder="Please enter your password" required>
+            </div>
+
+            <textarea id="description" name="description" placeholder="Tell us something about yourself" required></textarea>
             <button type="submit">Sign Up</button>
         </form>
     </div>
 </div>
+
+<!-- Loader HTML -->
+<div id="loader" class="loader" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading... Please wait</p>
+</div>
+
+<!-- JavaScript -->
+<script type="module">
+    // Toggle Password Visibility
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+    }
+
+    // Signup Function
+    async function signup() {
+        // Show loader
+        document.getElementById('loader').style.display = 'flex';
+
+        try {
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+            const dob = document.getElementById('dob').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const description = document.getElementById('description').value;
+
+            // Perform signup with Firebase (functionality to be implemented in firebase.js)
+            await firebaseSignup(name, surname, dob, email, password, description);
+
+            // Hide loader after success
+            document.getElementById('loader').style.display = 'none';
+            alert('Signup successful! Redirecting to login...');
+            window.location.href = '/'; // Redirect to login after signup
+        } catch (error) {
+            // Hide loader in case of an error
+            document.getElementById('loader').style.display = 'none';
+            alert('Error during signup: ' + error.message);
+        }
+    }
+</script>
+
 </body>
 </html>
+'

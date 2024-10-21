@@ -3,11 +3,11 @@ from firebase_admin import credentials, db
 import numpy as np
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from firebase_init import initialize_firebase  # Import your Firebase initialization
 
-cred = credentials.Certificate('service_key.json')
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://heartchat-7268c-default-rtdb.firebaseio.com/'
-})
+# Initialize Firebase before any Firebase service is accessed
+initialize_firebase()
+
 
 model = tf.keras.models.load_model('heart_attack_model.keras')
 firebase_ref = db.reference('responses')
