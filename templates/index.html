@@ -9,6 +9,8 @@
 </head>
 <body>
     <div class="sidebar">
+        <a href="{{ url_for('home') }}"><i class="fas fa-arrow-left back-button"></i></a>
+        <img src="/static/output-onlinepngtools (1).png" alt="Logo" class="logo"> 
         <form method="POST" action="{{ url_for('chatbot_routes.new_chat') }}">
             <button type="submit" class="new-chat">+ New chat</button>
         </form>

@@ -151,3 +151,11 @@ body {
 .profile_card p {
     color: #dddddd;
 }
+
+.logo {
+    position: fixed; 
+    top: 10px; 
+    right: 10px; 
+    width: 60px; 
+    height: auto;
+}
