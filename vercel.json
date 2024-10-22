@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.10"
+      }
     }
   ],
   "routes": [
@@ -11,5 +14,11 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ]
+  ],
+  "env": {
+    "FIREBASE_CREDENTIALS_PATH": "servicekey.json",
+    "FIREBASE_DATABASE_URL": "https://healthchat-92756-default-rtdb.firebaseio.com/",
+    "GEMINI_API_KEY": "AIzaSyBc8DGEt_fzuUwDJwixDnVUhC8wZ5Hc0X0",
+    "FIREBASE_STORAGE_BUCKET": "gs://healthchat-92756.appspot.com"
+  }
 }
