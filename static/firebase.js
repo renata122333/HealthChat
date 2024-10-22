@@ -18,50 +18,39 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app); // Initialize the Realtime Database
 
-// Login Function
+
 window.login = async () => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
     try {
-        // Show the loader when login starts
         document.getElementById('loader').style.display = 'flex';
 
-        // Sign in the user
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Get the user's ID token
-        const idToken = await user.getIdToken();
-
-        // Send the ID token to the server for verification
-        const response = await fetch('/verify_token', {
+        const response = await fetch('/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: idToken })
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'email': email,
+                'password': password
+            })
         });
 
-        const data = await response.json();
-
-        // Hide the loader once the process is complete
         document.getElementById('loader').style.display = 'none';
 
-        // Check if the login was successful
-        if (data.success) {
-            // Redirect to the home page
-            window.location.href = '/home';
+        if (response.redirected) {
+            window.location.href = response.url;
         } else {
-            // Display login failure message
-            document.getElementById("error-message").textContent = 'Login failed. Please try again.';
+            const text = await response.text();
+            document.body.innerHTML = text;
         }
     } catch (error) {
-        // Hide the loader in case of an error
         document.getElementById('loader').style.display = 'none';
-
-        // Display error message
         document.getElementById("error-message").textContent = error.message;
     }
 };
+
 
 // Function to toggle password visibility
 window.togglePasswordVisibility = () => {

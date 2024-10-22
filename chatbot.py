@@ -1,15 +1,27 @@
+import logging
 from firebase_admin import auth
-from flask import Blueprint, request, render_template, session, g, url_for, flash, redirect
+from flask import Blueprint, request, render_template, session, url_for, flash, redirect
 from model import make_prediction as model_prediction, numerical_features, categorical_features, firebase_ref
 import google.generativeai as genai
 from datetime import datetime
-from firebase_init import initialize_firebase  # Import your Firebase initialization
+from firebase_init import initialize_firebase
+import re
 
-# Initialize Firebase before any Firebase service is accessed
-initialize_firebase()
+# Initialize Firebase
+db_ref, bucket = initialize_firebase()
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Set up Blueprint
 chatbot_routes = Blueprint('chatbot_routes', __name__)
+
+# Add your API key here
+GOOGLE_API_KEY = "AIzaSyBc8DGEt_fzuUwDJwixDnVUhC8wZ5Hc0X0"
+
+# Configure Generative AI
+genai.configure(api_key=GOOGLE_API_KEY)
+model = genai.GenerativeModel('gemini-pro')
 
 questions = [
     {"question": "What is your age? (18-100)", "range": "18-120"},
@@ -36,15 +48,13 @@ questions = [
     {"question": "What is your income level? (Low/Medium/High)", "range": "Low/Medium/High"}
 ]
 
-# Configure Generative AI
-genai.configure(api_key="AIzaSyAd0kEzSrkQ6fT4qGqyRxDY0CWolic7_N0")
-model = genai.GenerativeModel('gemini-pro')
 
 
 @chatbot_routes.route('/', methods=['GET', 'POST'])
 def index():
     user_name = "Anonymous"
     user_id = None
+
     if 'user' not in session:
         flash('Please log in to access the chatbot.', 'error')
         return redirect(url_for('login'))
@@ -57,10 +67,12 @@ def index():
     except Exception as e:
         print(f"Error retrieving user data: {e}")
 
+    # Initialize session variables if not already set
     if 'chat_messages' not in session:
         session['chat_messages'] = []
         session['current_question'] = 0
         session['user_responses'] = {"What is your name?": user_name}
+        session['prediction_complete'] = False
         session['chat_messages'].append(
             {"content": f"Hello {user_name}! Let's start your heart health assessment.", "is_user": False})
         session['chat_messages'].append({"content": questions[0]['question'], "is_user": False})
@@ -69,34 +81,46 @@ def index():
         user_message = request.form.get('message')
         print(f"Received user message: {user_message}")  # Debug log
 
-        current_question = session['current_question']
-        if current_question < len(questions):
-            if validate_input(questions[current_question], user_message):
-                session['user_responses'][questions[current_question]['question']] = user_message
-                session['chat_messages'].append({"content": user_message, "is_user": True})
-                session['current_question'] += 1
+        if not session['prediction_complete']:
+            # Continue collecting health data for the prediction
+            current_question = session['current_question']
+            if current_question < len(questions):
+                if validate_input(questions[current_question], user_message):
+                    session['user_responses'][questions[current_question]['question']] = user_message
+                    session['chat_messages'].append({"content": user_message, "is_user": True})
+                    session['current_question'] += 1
 
-                if session['current_question'] < len(questions):
-                    bot_message = questions[session['current_question']]['question']
+                    if session['current_question'] < len(questions):
+                        bot_message = questions[session['current_question']]['question']
+                    else:
+                        print(f"All questions answered. User responses: {session['user_responses']}")  # Debug log
+                        risk, advice = make_prediction(session['user_responses'])
+                        if risk == "Error":
+                            risk, advice = gemini_prediction(session['user_responses'])
+
+                        bot_message = (f"Based on your responses, your risk of heart disease is {risk}.<br><br>Advice"
+                                       f":<br>{advice}")
+                        session['prediction_complete'] = True  # Prediction complete
+
+                        if user_id and risk != "Unable to assess" and risk != "Error":
+                            store_assessment(user_id, session['user_responses'], risk, advice)
+
+                    session['chat_messages'].append({"content": bot_message, "is_user": False})
                 else:
-                    print(f"All questions answered. User responses: {session['user_responses']}")  # Debug log
-                    risk, advice = make_prediction(session['user_responses'])
-                    if risk == "Error":
-                        risk, advice = gemini_prediction(session['user_responses'])
+                    error_message = f"Invalid input. Please check the range: {questions[current_question]['range']}"
+                    session['chat_messages'].append({"content": error_message, "is_user": False})
 
-                    bot_message = f"Based on your responses, your risk of heart disease is {risk}.<br><br>Advice:<br>{advice}"
-                    if user_id and risk != "Unable to assess" and risk != "Error":
-                        store_assessment(user_id, session['user_responses'], risk, advice)
-
-                session['chat_messages'].append({"content": bot_message, "is_user": False})
-            else:
-                error_message = f"Invalid input. Please check the range: {questions[current_question]['range']}"
-                session['chat_messages'].append({"content": error_message, "is_user": False})
+        else:
+            # After prediction, handle follow-up questions
+            risk, response_message = gemini_prediction(session['user_responses'], user_question=user_message)
+            session['chat_messages'].append({"content": user_message, "is_user": True})
+            session['chat_messages'].append({"content": response_message, "is_user": False})
 
         session.modified = True
 
     history = get_user_history(user_id) if user_id else []
     return render_template('index.html', chat_messages=session['chat_messages'], history=history, user_name=user_name)
+
 
 def make_prediction(responses):
     try:
@@ -116,6 +140,8 @@ def make_prediction(responses):
     except Exception as e:
         print(f"Error in make_prediction: {e}")
         return "Error", "There was an issue processing your data."
+
+
 def validate_input(question, response):
     if question['range'] == "Text":
         return True
@@ -136,57 +162,89 @@ import re
 
 
 def clean_text(text):
-    # Remove asterisks and other symbols, but keep structure
+    # Remove asterisks and other symbols
     cleaned = re.sub(r'\*+', '', text)
     cleaned = re.sub(r'["""]', '', cleaned)
-    # Replace multiple newlines with a single newline
-    cleaned = re.sub(r'\n+', '\n', cleaned)
+
+    # Bold important sections (Risk Factors, Protective Factors, Advice)
+    cleaned = re.sub(r'(Risk Factors)', r'<strong>\1</strong>', cleaned)
+    cleaned = re.sub(r'(Protective Factors)', r'<strong>\1</strong>', cleaned)
+    cleaned = re.sub(r'(Advice)', r'<strong>\1</strong>', cleaned)
+
+    # Replace multiple newlines with a single <br> for HTML formatting
+    cleaned = re.sub(r'\n+', '<br>', cleaned)
+
     # Remove leading/trailing whitespace from each line
-    cleaned = '\n'.join(line.strip() for line in cleaned.split('\n'))
+    cleaned = '<br>'.join(line.strip() for line in cleaned.split('<br>'))
+
     return cleaned
 
 
-def gemini_prediction(responses):
-    prompt = f"Based on the following health data, assess the risk of heart disease and provide advice: {responses}"
+def gemini_prediction(responses, user_question=None):
+    """
+    Generates a heart disease risk assessment based on user health data and can handle follow-up questions.
+
+    :param responses: The health data provided by the user.
+    :param user_question: Optional. A follow-up question from the user after the initial prediction.
+    :return: A tuple of (risk level, response message or advice)
+    """
+    if not user_question:
+        # Initial health assessment prediction
+        prompt = (
+            f"Based on the following health data, assess the risk of heart disease and provide advice: {responses} , "
+            f"the user will also be assessed by the images and other medical questions about the health")
+    else:
+        # Follow-up question from the user after prediction
+        prompt = f"User has the following health data: {responses}. Now, they are asking: {user_question}. Please respond accordingly."
+
     try:
         response = model.generate_content(prompt)
 
         if response.candidates and response.candidates[0].content:
             text = response.candidates[0].content.parts[0].text
-            risk = "moderate"  # Default risk
-            if "high risk" in text.lower():
-                risk = "high"
-            elif "low risk" in text.lower():
-                risk = "low"
 
-            # Clean the advice text
-            cleaned_advice = clean_text(text)
+            # Risk level only determined during initial prediction
+            if not user_question:
+                risk = "moderate"  # Default risk
+                if "high risk" in text.lower():
+                    risk = "high"
+                elif "low risk" in text.lower():
+                    risk = "low"
 
-            return risk, cleaned_advice
+                # Clean the advice text
+                cleaned_advice = clean_text(text)
+                return risk, cleaned_advice
+            else:
+                # Follow-up question response, no risk level
+                cleaned_response = clean_text(text)
+                return None, cleaned_response
         else:
-            return "Unable to assess", "I apologize, but I couldn't generate a specific assessment based on the provided information. Please consult with a healthcare professional for accurate health advice."
+            return None, "I couldn't generate a specific response. Please consult with a healthcare professional for advice."
+
     except ValueError as e:
         print(f"Error in Gemini prediction: {e}")
-        return "Error", "I encountered an error while processing your information. Please try again or consult with a healthcare professional for accurate health advice."
+        return None, "I encountered an error while processing your information. Please try again or consult with a healthcare professional for advice."
 
+import json
+from firebase_admin import db
 
 def store_assessment(user_id, responses, risk, advice):
     try:
-        user_ref = firebase_ref.child(user_id)
+        user_ref = db.reference(f'users/{user_id}/assessments')
         new_assessment = {
-            "responses": responses,
+            "responses": json.dumps(responses),  # Convert dict to JSON string
             "risk": risk,
             "advice": advice,
             "timestamp": datetime.now().timestamp()
         }
         user_ref.push(new_assessment)
+        print(f"Assessment stored successfully for user {user_id}")
     except Exception as e:
         print(f"Error storing assessment: {e}")
 
-
 def get_user_history(user_id):
     try:
-        user_ref = firebase_ref.child(user_id)
+        user_ref = db.reference(f'users/{user_id}/assessments')
         history = user_ref.get()
         if history:
             formatted_history = []
@@ -195,7 +253,8 @@ def get_user_history(user_id):
                     "timestamp": datetime.fromtimestamp(record['timestamp']).strftime('%Y-%m-%d %H:%M:%S'),
                     "question": "Health Assessment",
                     "risk": record['risk'],
-                    "advice": record['advice']
+                    "advice": record['advice'],
+                    "responses": json.loads(record['responses'])  # Convert JSON string back to dict
                 })
             return formatted_history
         else:

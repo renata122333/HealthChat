@@ -17,8 +17,18 @@
         <div class="history">
             {% for entry in history %}
                 <div class="history-item">
-                    <p>{{ entry.timestamp }}: {{ entry.question }}</p>
+                    <p>{{ entry.timestamp }}: Health Assessment</p>
                     <p>Risk: {{ entry.risk }}</p>
+                    <details>
+                        <summary>View Details</summary>
+                        <p>Advice: {{ entry.advice }}</p>
+                        <h4>Responses:</h4>
+                        <ul>
+                            {% for question, answer in entry.responses.items() %}
+                                <li>{{ question }}: {{ answer }}</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
                 </div>
             {% endfor %}
         </div>
@@ -26,13 +36,13 @@
     <div class="main-content">
         <h1>Heart Health Chatbot</h1>
         <h2>Welcome, {{ user_name }}!</h2>
-  <div class="chat-container">
-    {% for message in chat_messages %}
-        <div class="message {% if message.is_user %}user-message{% else %}bot-message{% endif %}">
-            <p>{{ message.content | safe }}</p>
+        <div class="chat-container">
+            {% for message in chat_messages %}
+                <div class="message {% if message.is_user %}user-message{% else %}bot-message{% endif %}">
+                    <p>{{ message.content | safe }}</p>
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
-</div>
         <form method="POST" action="{{ url_for('chatbot_routes.index') }}" enctype="multipart/form-data">
             <div class="input-container">
                 <label for="file-upload" class="upload-button"><i class="fas fa-paperclip"></i></label>

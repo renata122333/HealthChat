@@ -67,14 +67,33 @@ body {
     color: #ffffff;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.7);
 }
+
 .history-item {
-    padding: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.history-item details {
+    margin-top: 10px;
+}
+
+.history-item summary {
     cursor: pointer;
-    border-radius: 5px;
+    color: #007bff;
 }
-.history-item:hover {
-    background-color: #2222d3;
+
+.history-item ul {
+    margin-top: 5px;
+    padding-left: 20px;
 }
+
+.history-item li {
+    margin-bottom: 5px;
+}
+
+
+
 .chat-container {
     flex-grow: 1;
     overflow-y: auto;

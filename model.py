@@ -41,15 +41,21 @@ def make_prediction(responses):
         return "Error", "There was an issue processing your data."
 
 
+# Function to save user input and prediction to Firebase
 def save_to_firebase(user_name, responses, prediction, risk, advice):
     try:
-        user_ref = firebase_ref.child(user_name)  # Create a reference for the specific user
+        # Create a reference for the specific user in the database
+        user_ref = firebase_ref.child(user_name)
+
+        # Prepare data to be saved
         user_data = {
-            'responses': responses,
-            'prediction': float(prediction),
-            'risk': risk,
-            'advice': advice
+            'responses': responses,  # User's input
+            'prediction': float(prediction),  # Model prediction (probability)
+            'risk': risk,  # Risk level (high/moderate/low)
+            'advice': advice  # Advice provided
         }
-        user_ref.push(user_data)  # Push new data under the user's reference
+
+        # Save data under the user's reference
+        user_ref.push(user_data)
     except Exception as e:
         print(f"Error saving to Firebase: {e}")

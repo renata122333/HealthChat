@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
+
     <style>
         /* Loader styling */
         #loader {
@@ -56,7 +58,7 @@
 
                 <label for="password" class="password">PLEASE ENTER YOUR PASSWORD</label>
                 <div class="password-container">
-                    <input type="password" id="password" name="password" placeholder="Password" required>
+<input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password">
                     <button type="button" id="toggle-password" onclick="togglePasswordVisibility()">👁</button>
                 </div>
 
@@ -74,6 +76,9 @@
                     </ul>
                 {% endif %}
             {% endwith %}
+
+            <!-- Error message display -->
+            <div id="error-message" style="color: red;"></div>
         </div>
     </div>
 
@@ -86,8 +91,23 @@
     <script>
         // Loader Display on Form Submission
         const loginForm = document.getElementById("login-form");
-        loginForm.addEventListener("submit", () => {
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent default form submission
             document.getElementById("loader").style.display = 'flex';
+
+            const formData = new FormData(loginForm);
+            const response = await fetch(loginForm.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                document.getElementById("loader").style.display = 'none';
+                const text = await response.text();
+                document.body.innerHTML = text; // Display the response HTML
+            }
         });
 
         // Password Visibility Toggle
@@ -100,6 +120,5 @@
             }
         }
     </script>
-
 </body>
 </html>
